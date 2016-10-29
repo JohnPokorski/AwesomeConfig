@@ -6,6 +6,8 @@ require("awful.rules")
 require("beautiful")
 -- Notification library
 require("naughty")
+--Aditional Widget Libraries
+require("lain")
 
 -- Load Debian menu entries
 require("debian.menu")
@@ -82,7 +84,7 @@ for s = 1, screen.count() do
 end
 -- }}}
 
--- {{{ Menu
+-- {{{ Menu (Hardcoded like an idiot)
 -- Create a laucher widget and a main menu
 myawesomemenu = {
    { "Manual", terminal .. " -e man awesome" },
@@ -194,6 +196,53 @@ for s = 1, screen.count() do
     mytasklist[s] = awful.widget.tasklist(function(c)
                                               return awful.widget.tasklist.label.currenttags(c, s)
                                           end, mytasklist.buttons)
+
+    -- Create a Battery Widget(WIP)
+
+    baticon = wibox.widget.imagebox(beautiful.bat)
+    batbar = awful.widget.progressbar()
+    batbar:set_color(beautiful.fg_normal)
+    batbar:set_width(55)
+    batbar:set_ticks(true)
+    batbar:set_ticks_size(6)
+    batbar:set_background_color(beautiful.bg_normal)
+    batmargin = wibox.layout.margin(batbar, 2, 7)
+    batmargin:set_top(6)
+    batmargin:set_bottom(6)
+    batupd = lain.widgets.bat({
+    settings = function()
+        if bat_now.status == "N/A" or type(bat_now.perc) ~= "number" then return end
+
+        if bat_now.status == "Charging" then
+            baticon:set_image(beautiful.ac)
+            if bat_now.perc >= 98 then
+                batbar:set_color(green)
+            elseif bat_now.perc > 50 then
+                batbar:set_color(beautiful.fg_normal)
+            elseif bat_now.perc > 15 then
+                batbar:set_color(beautiful.fg_normal)
+            else
+                batbar:set_color(red)
+            end
+        else
+            if bat_now.perc >= 98 then
+                batbar:set_color(green)
+            elseif bat_now.perc > 50 then
+                batbar:set_color(beautiful.fg_normal)
+                baticon:set_image(beautiful.bat)
+            elseif bat_now.perc > 15 then
+                batbar:set_color(beautiful.fg_normal)
+                baticon:set_image(beautiful.bat_low)
+            else
+                batbar:set_color(red)
+                baticon:set_image(beautiful.bat_no)
+            end
+        end
+        batbar:set_value(bat_now.perc / 100)
+    end
+    })
+    batwidget = wibox.widget.background(batmargin)
+    batwidget:set_bgimage(beautiful.widget_bg)
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
