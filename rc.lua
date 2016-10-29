@@ -7,8 +7,7 @@ require("beautiful")
 -- Notification library
 require("naughty")
 --Aditional Widget Libraries
-require("lain")
-
+require("battery")
 -- Load Debian menu entries
 require("debian.menu")
 
@@ -198,51 +197,10 @@ for s = 1, screen.count() do
                                           end, mytasklist.buttons)
 
     -- Create a Battery Widget(WIP)
+    mybatterywidget = widget({type = "textbox", name = "batterywidget", align = "right" })
 
-    baticon = wibox.widget.imagebox(beautiful.bat)
-    batbar = awful.widget.progressbar()
-    batbar:set_color(beautiful.fg_normal)
-    batbar:set_width(55)
-    batbar:set_ticks(true)
-    batbar:set_ticks_size(6)
-    batbar:set_background_color(beautiful.bg_normal)
-    batmargin = wibox.layout.margin(batbar, 2, 7)
-    batmargin:set_top(6)
-    batmargin:set_bottom(6)
-    batupd = lain.widgets.bat({
-    settings = function()
-        if bat_now.status == "N/A" or type(bat_now.perc) ~= "number" then return end
-
-        if bat_now.status == "Charging" then
-            baticon:set_image(beautiful.ac)
-            if bat_now.perc >= 98 then
-                batbar:set_color(green)
-            elseif bat_now.perc > 50 then
-                batbar:set_color(beautiful.fg_normal)
-            elseif bat_now.perc > 15 then
-                batbar:set_color(beautiful.fg_normal)
-            else
-                batbar:set_color(red)
-            end
-        else
-            if bat_now.perc >= 98 then
-                batbar:set_color(green)
-            elseif bat_now.perc > 50 then
-                batbar:set_color(beautiful.fg_normal)
-                baticon:set_image(beautiful.bat)
-            elseif bat_now.perc > 15 then
-                batbar:set_color(beautiful.fg_normal)
-                baticon:set_image(beautiful.bat_low)
-            else
-                batbar:set_color(red)
-                baticon:set_image(beautiful.bat_no)
-            end
-        end
-        batbar:set_value(bat_now.perc / 100)
-    end
-    })
-    batwidget = wibox.widget.background(batmargin)
-    batwidget:set_bgimage(beautiful.widget_bg)
+   
+ -- }}}
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
@@ -256,6 +214,7 @@ for s = 1, screen.count() do
         },
         mylayoutbox[s],
         mytextclock,
+        mybatterywidget,
         s == 1 and mysystray or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
@@ -450,4 +409,17 @@ end)
 
 client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+
+-- {{ Battery timer
+    
+  -- seed the battery widget: don't wait for first timer
+  mybatterywidget.text = batteryInfo("BAT0")
+  -- timer to update battery widget
+  mybatterywidget_timer = timer({timeout = 20})
+  mybatterywidget_timer:add_signal("timeout", function()
+    mybatterywidget.text = batteryInfo("BAT0")
+    end)
+  mybatterywidget_timer:start()
+
+-- }}
 -- }}}
