@@ -8,7 +8,8 @@ require("beautiful")
 require("naughty")
 --Aditional Widget Libraries
 require("battery")
--- Load Debian menu entries
+require("volume")
+-- Load external menu entries (never actually used, but kept for reasons of paranoia.
 require("debian.menu")
 
 -- {{{ Error handling
@@ -38,11 +39,9 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
---This is the good init
-beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
--- This is the sketchy init
--- beautiful.init("/home/john/.config/awesome/themes/versalife/theme.lua")
-
+--This is my fallback theme
+--beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
+beautiful.init("/usr/share/awesome/themes/versalife/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
 terminal = "x-terminal-emulator"
@@ -84,6 +83,7 @@ end
 -- }}}
 
 -- {{{ Menu (Hardcoded like an idiot)
+-- The problem I'm running into is that if I make the menu external, it becomes a single submenu, instead of a bunch. No bueno.
 -- Create a laucher widget and a main menu
 myawesomemenu = {
    { "Manual", terminal .. " -e man awesome" },
@@ -102,22 +102,39 @@ officeMenu = {
 -- Personal internet submenu
 internetMenu = {
 	{"Wireshark","/usr/bin/wireshark","/usr/share/pixmaps/wsicon32.xpm"},
-	{"Chromium","chromium","/usr/share/pixmaps/chromium.xpm"},
+	{"Chrome","/usr/bin/google-chrome","/usr/share/pixmaps/chromium.xpm"},
 	{"Transmission","/usr/bin/transmission-gtk","/usr/share/pixmaps/transmission.xpm"}
+	-- Expect to change, remove wicd and add a network manager frontend
 }
 -- Personal Media submenu
 mediaMenu = {
-	{"VLC","/usr/bin/vlc"},
+	{"VLC","/usr/bin/vlc","/usr/share/icons/hicolor/32x32/apps/vlc.xpm"},
 	{"GIMP","/usr/bin/gimp","/usr/share/pixmaps/gimp.xpm"}
 	    }
+-- Personal Games submenu
+-- launches GOG games with my custom goglaunch script
+-- I think some of these are borked at an install level. At least one seems to be missing data.
+-- Confirmed to work with : FTL, Luftrausers, ToME.
+-- I should figure out what -e actually does.
+gamesMenu = {
+	-- {"Baldur's Gate 2", terminal .. " -e goglaunch BaldursGate2Complete"},
+	{"FTL: Advanced Edition", terminal .. " -e goglaunch FTLAdvancedEdition"},
+	{"Luftrausers", terminal .. " -e goglaunch Luftrausers"},
+	{"Tales of Maj'Eyal", terminal .. " -e goglaunch TalesofMajEyal"},
+	-- {"Xenonauts", terminal .. " -e goglaunch Xenonauts"},
+	{"The Masterplan", terminal .. " -e goglaunch TheMasterplan"}
+}
 
-mymainmenu = awful.menu({ items = { { "Awesome", myawesomemenu, beautiful.awesome_icon },
+
+mymainmenu = awful.menu({ items = { { "Awesome", myawesomemenu,"/usr/share/awesome/themes/versalife/icons/settingsIcon.xpm" },
                                   --{ "Debian", debian.menu.Debian_menu.Debian },
-				    { "Libre Office", officeMenu},
-				    { "Media", mediaMenu},
-				    { "Internet", internetMenu},
-                                    { "Terminal", terminal},
-				    { "Files","/usr/bin/nautilus"}
+				    { "Office", officeMenu,"/usr/share/awesome/themes/versalife/icons/officeIcon.xpm"},
+				    { "Media", mediaMenu,"/usr/share/awesome/themes/versalife/icons/mediaIcon.xpm"},
+				    { "Internet", internetMenu,"/usr/share/awesome/themes/versalife/icons/internetIcon.xpm"},
+				    { "Games", gamesMenu, "/usr/share/awesome/themes/versalife/icons/gamesIcon.xpm"},
+				    { "Passwords","/usr/bin/keepassx","/usr/share/awesome/themes/versalife/icons/keepassIcon.xpm"},
+                                    { "Terminal", terminal,"/usr/share/awesome/themes/versalife/icons/terminalIcon.xpm"},
+				    { "Files","/usr/bin/nautilus","/usr/share/awesome/themes/versalife/icons/fileIcon.xpm"}
                                   }
                         })
 
@@ -215,6 +232,7 @@ for s = 1, screen.count() do
         mylayoutbox[s],
         mytextclock,
         mybatterywidget,
+        volume_widget,
         s == 1 and mysystray or nil,
         mytasklist[s],
         layout = awful.widget.layout.horizontal.rightleft
@@ -261,7 +279,11 @@ globalkeys = awful.util.table.join(
                 client.focus:raise()
             end
         end),
-
+    
+    -- Volume control
+    awful.key({ modkey,         }, "F12", function() awful.util.spawn("amixer set Master 10%+", false) end),
+    awful.key({ modkey,         }, "F11", function() awful.util.spawn("amixer set Master 10%-", false) end),
+    awful.key({ modkey,         }, "F10", function() awful.util.spawn("amixer set Master toggle", false) end),
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
     awful.key({ modkey, "Control" }, "r", awesome.restart),
@@ -423,3 +445,5 @@ client.add_signal("unfocus", function(c) c.border_color = beautiful.border_norma
 
 -- }}
 -- }}}
+
+awful.util.spawn_with_shell("nm-applet")
