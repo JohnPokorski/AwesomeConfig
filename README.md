@@ -8,13 +8,15 @@ If you want to use this, go ahead. Understand however that this is a configurati
 
 TO DO
 
-1: Impliment dynamic tagging
+1: Get menu set up as a seperate file
 
-2: Seperate menu from config
+2: Impliment dynamic tagging
 
-3: Build a theme
+3: Seperate menu from config
 
-4: Update to version 3.5
+4: Build a theme
+
+5: Update to version 3.5
 
 Ongoing Work
 - Menu Design
